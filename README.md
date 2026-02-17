@@ -22,8 +22,8 @@ Supports both **Nano Banana** (Gemini 2.5 Flash Image) for fast generation and *
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/YOUR_USERNAME/ComfyUI-Gemini-NanoBanana.git
-cd ComfyUI-Gemini-NanoBanana
+git clone https://github.com/Gerlif/comfy-banana-kasger.git
+cd comfy-banana-kasger
 pip install -r requirements.txt
 ```
 

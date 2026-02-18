@@ -281,6 +281,12 @@ class GeminiTextToImage:
                     "default": 0, "min": 0, "max": 0xFFFFFFFF,
                     "tooltip": "Seed for reproducibility (advisory, not guaranteed by API).",
                 }),
+                "image_1": ("IMAGE",),
+                "image_2": ("IMAGE",),
+                "image_3": ("IMAGE",),
+                "image_4": ("IMAGE",),
+                "image_5": ("IMAGE",),
+                "image_6": ("IMAGE",),
             },
         }
 
@@ -289,8 +295,9 @@ class GeminiTextToImage:
     FUNCTION = "generate"
     CATEGORY = "Gemini/NanoBanana"
     DESCRIPTION = (
-        "All-in-one Nano Banana text-to-image node.\n"
-        "Handles API key, model selection (auto-fetched from API), and generation.\n"
+        "All-in-one Nano Banana node for text-to-image and image editing.\n"
+        "Handles API key, model selection (auto-fetched), and generation.\n"
+        "Connect up to 6 reference/input images for editing, style transfer, or composition.\n"
         "The gemini_config output can be passed to other Nano Banana nodes."
     )
 
@@ -306,6 +313,12 @@ class GeminiTextToImage:
         use_google_search: bool = False,
         system_instruction: str = "",
         seed: int = 0,
+        image_1: torch.Tensor | None = None,
+        image_2: torch.Tensor | None = None,
+        image_3: torch.Tensor | None = None,
+        image_4: torch.Tensor | None = None,
+        image_5: torch.Tensor | None = None,
+        image_6: torch.Tensor | None = None,
     ):
         resolved_key = _resolve_api_key(api_key)
         chosen_model = custom_model.strip() if custom_model.strip() else model
@@ -320,7 +333,16 @@ class GeminiTextToImage:
         if system_instruction.strip():
             text_content = f"[System instruction]: {system_instruction.strip()}\n\n{prompt}"
 
-        contents = [{"role": "user", "parts": [{"text": text_content}]}]
+        parts: list[dict] = [{"text": text_content}]
+
+        # Append any connected input images
+        for img_tensor in [image_1, image_2, image_3, image_4, image_5, image_6]:
+            if img_tensor is not None:
+                pil_img = _tensor_to_pil(img_tensor)
+                img_b64 = _pil_to_base64(pil_img, "PNG")
+                parts.append({"inlineData": {"mimeType": "image/png", "data": img_b64}})
+
+        contents = [{"role": "user", "parts": parts}]
 
         data = _generate_content(
             api_key=resolved_key,
